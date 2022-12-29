@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--<script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script> -->
+<script src="https://code.jquery.com/jquery-3.6.3.slim.js" integrity="sha256-DKU1CmJ8kBuEwumaLuh9Tl/6ZB6jzGOBV/5YpNE2BWc=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/css/main.min.css">
+
+	<meta id="_csrf" name="_csrf" th:content="${_csrf.token}"/>
+	<meta id="_csrf_header" name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+<title>근로자 스트레스(홍채)</title>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+
+<link rel="stylesheet" type="text/css" href="/css/main.css">
+
+  <!-- fullcalendar -->  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.0/main.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.0/main.min.js"></script>
+
+
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                timeZone: 'UTC',
+                initialView: 'dayGridMonth', // 홈페이지에서 다른 형태의 view를 확인할  수 있다.
+                events:[ // 일정 데이터 추가 , DB의 event를 가져오려면 JSON 형식으로 변환해 events에 넣어주면된다.
+                    {
+                        title:'일정',
+                        start:'2021-05-26 00:00:00',
+                        end:'2021-05-27 24:00:00' 
+                        // color 값을 추가해 색상도 변경 가능 자세한 내용은 하단의 사이트 참조
+                    }
+                ], headerToolbar: {
+                    center: 'addEventButton' // headerToolbar에 버튼을 추가
+                }, customButtons: {
+                    addEventButton: { // 추가한 버튼 설정
+                        text : "일정 추가",  // 버튼 내용
+                        click : function(){ // 버튼 클릭 시 이벤트 추가
+                         	$("#calendarModal").modal("show");
+                         	
+                         	
+                         	$("#closeBtn").on("click",function(){	// Modal 닫기
+                         		console.log("닫기 확인");
+                         		$("#calendarModal").modal("hide");
+                         	});
+						
+                            $("#addCalendar").on("click",function(){  // modal의 추가 버튼 클릭 시
+                                var content = $("#calendar_content").val();
+                                var start_date = $("#calendar_start_date").val();
+                                var end_date = $("#calendar_end_date").val();
+                                         
+                                //내용 입력 여부 확인
+                                if(content == null || content == ""){
+                                    alert("내용을 입력하세요.");
+                                }else if(start_date == "" || end_date ==""){
+                                    alert("날짜를 입력하세요.");
+                                }else if(new Date(end_date)- new Date(start_date) < 0){ // date 타입으로 변경 후 확인
+                                    alert("종료일이 시작일보다 먼저입니다.");
+                                }else{ // 정상적인 입력 시
+                                    var obj = {
+                                        "title" : content,
+                                        "start" : start_date,
+                                        "end" : end_date
+                                    }//전송할 객체 생성
+
+                                    console.log(obj); //서버로 해당 객체를 전달해서 DB 연동 가능
+                                }
+                            });
+                            
+                           	
+                        }
+                    }
+                },
+                editable: true, // false로 변경 시 draggable 작동 x 
+                displayEventTime: false // 시간 표시 x
+            });
+            calendar.render();
+
+        });
+    </script>
+
+ <style>
+    #calendarBox{
+		width: 100%;
+    }
+</style>
+
+</head>
+<body>
+	<!--<header th:replace="~{header :: header}"></header>-->
+	<nav th:replace="~{nav :: nav}"></nav>
+	<main class="d-flex flex-nowrap">
+		
+			
+		<div class="b-example-divider b-example-vr"></div>
+			<!--본문-->
+		<div class="box-container" style="padding-left:280px">		
+			<h1>스케줄 관리</h1>			
+			<div id="calendarBox">
+	    		<div id="calendar"></div>
+			</div>
+		</div>
+	    
+	    <div class="modal fade" id="calendarModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        
+		        <h4 class="modal-title" id="myModalLabel">일정을 입력하세요.</h4>
+		      </div>
+		      <div class="modal-body">
+		        <label for="taskId" class="col-form-label">일정 내용</label>
+	            <input type="text" class="form-control" id="calendar_content" name="calendar_content">
+	            <label for="taskId" class="col-form-label">시작 날짜</label>
+	            <input type="date" class="form-control" id="calendar_start_date" name="calendar_start_date">
+	            <label for="taskId" class="col-form-label">종료 날짜</label>
+	            <input type="date" class="form-control" id="calendar_end_date" name="calendar_end_date">
+		      </div>
+		      <div class="modal-footer">
+		      <button type="button" class="btn btn-warning" id="addCalendar">추가</button>
+		        <button type="button" class="btn btn-default " id="closeBtn"value="닫기1">닫기</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	</main>
+	
+</body>
+</html>
